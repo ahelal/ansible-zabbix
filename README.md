@@ -74,8 +74,8 @@ All default variables are located **defaults/main.yml**.
   
   - *zabbix_server_db_port:* DB port ```zabbix_server_db_port : "5432"```
 
-##Zabbix over SSH
-*Optionally* by default Zabbix communication between agent and server is in plain text and no authentication. If monitoring over the internet you might want to use ssh tunneling.
+##Zabbix over SSH (Optional)
+By default Zabbix communication between agent and server is in plain text and no authentication. If monitoring over the internet you might want to use ssh tunneling.
 
 Here is an example of how Zabbix agent over ssh will work
 - A user will be created on the target host and key will be deployed that user has no terminal rights and can only bind to one port lets say the default port 10500
