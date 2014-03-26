@@ -1,10 +1,10 @@
 ---
 
-- name : Update apt cache
+- name : zabbix_server | Update apt cache
   apt :
      update_cache="yes"
 
-- name: Install pre dependency
+- name: zabbix_server | Install pre dependency
   apt:
      pkg="{{item}}"
      state=present
@@ -13,23 +13,23 @@
      - libcurl3-gnutls
   tags: zabbix_server
 
-- name: Add zabbix.com repository key
+- name: zabbix_server | Add zabbix.com repository key
   apt_key: 
      url=http://repo.zabbix.com/zabbix-official-repo.key
      state=present
   tags: zabbix_server
 
-- name: Add zabbix.com repository
+- name: zabbix_server | Add zabbix.com repository
   apt_repository: 
      repo='deb http://repo.zabbix.com/zabbix/{{zabbix_server_major}}.{{zabbix_server_minor}}/{{ansible_distribution|lower}} {{ansible_lsb.codename}} main contrib non-free' 
      state=present
   tags: zabbix_server
 
-- name : Update apt cache after repo add
+- name : zabbix_server | Update apt after adding repository
   apt :
      update_cache="yes"
 
-- name: Install Zabbix Server or proxy
+- name: zabbix_server | Install Zabbix Server or proxy
   apt: 
      pkg="zabbix-{{zabbix_server_install_type}}-{{zabbix_server_db_type}}"="{{zabbix_server_ubuntu}}"
      state=present
@@ -37,7 +37,7 @@
   tags: zabbix_server
   when: "zabbix_server_install == True" 
 
-- name: Install frontend 
+- name: zabbix_server | Install frontend 
   apt: 
      pkg="zabbix-frontend-php"="{{zabbix_server_ubuntu}}"
      state=present
@@ -45,14 +45,14 @@
   tags: zabbix_server
   when: "zabbix_server_front_install == True" 
 
-- name: Install Zabbix agent
+- name: zabbix_server | Install Zabbix agent
   apt: 
      pkg="zabbix-agent"="{{zabbix_server_ubuntu}}"
      state=present
      force=yes
   tags: zabbix_server
 
-- name: Install pre dependency for PHP
+- name: zabbix_server | Install pre dependency for PHP
   apt:
      pkg="{{item}}"
      state=present
@@ -61,7 +61,7 @@
   tags: zabbix_server
   when: "zabbix_server_front_install == True" 
 
-- name: Zabbix server conf file
+- name: zabbix_server | Zabbix server conf file
   template: 
      src=zabbix_server/zabbix_server.conf
      dest=/etc/zabbix/
@@ -71,7 +71,7 @@
   tags: zabbix_server
   when: "zabbix_server_install == True and zabbix_server_install_type == 'server'" 
 
-- name: Zabbix server php conf 
+- name: zabbix_server | Zabbix server php conf 
   template:
      src=zabbix_server/zabbix.conf.php
      dest=/etc/zabbix/web
@@ -82,7 +82,7 @@
   when: "zabbix_server_front_install == True" 
   notify: restart apache2
 
-- name: PHP timezone 
+- name: zabbix_server | PHP timezone 
   lineinfile: 
      dest=/etc/php5/apache2/php.ini
      state=present
@@ -94,7 +94,7 @@
   when: "zabbix_server_front_install == True" 
   tags: zabbix_server
 
-- name: Deploy html redirect
+- name: zabbix_server | Deploy html redirect
   template: 
      src=zabbix_server/index.html.j2
      dest={{zabbix_server_front_root}}/index.html
