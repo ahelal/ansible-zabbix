@@ -1,0 +1,28 @@
+{% if hostvars[item]["ZabbixSSH"] is defined %}
+# let autossh re-connect.
+# Host: {{hostvars[item]["ansible_ssh_host"]}}
+
+ServerAliveInterval="30"
+ServerAliveCountMax="3"
+StrictHostKeyChecking="no"
+
+LocalUser="{{zabbix_server_tunnel_user}}"
+IdentityFile="{{zabbix_server_tunnel_identity}}"
+
+tunName="{{ hostvars[item]["inventory_hostname"] }}"
+
+RemoteUser="{{zabbix_server_tunnel_remote}}"
+RemoteHost="{{hostvars[item]["ansible_ssh_host"]}}"
+{% if hostvars[item]["ansible_ssh_port"] is defined %}
+RemotePort="{{hostvars[item]["ansible_ssh_port"]}}"
+{% else %}
+RemotePort="22"
+{% endif %}
+ForwardPort=(
+    "R localhost:10051:localhost:10051"
+    "L localhost:{{hostvars[item]["ZabbixSSH"]}}:localhost:10050"
+)
+
+{% else %}
+## Your variables are not defined correctly 
+{% endif %}

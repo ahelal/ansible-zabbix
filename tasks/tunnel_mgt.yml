@@ -1,0 +1,91 @@
+---
+
+- name: apt install autossh 
+  apt: pkg="{{item}}" 
+  with_items:
+     - autossh
+  tags: tunnel_mgt
+
+- name: Create tunnel mon user
+  user: 
+    name="{{zabbix_server_tunnel_user}}"
+    home="{{zabbix_server_tunnel_home}}"
+    shell="/bin/bash" 
+    password="NOPASSWORD"
+    append="True"
+    state="present"
+    comment="tunnel user" 
+    force="yes"  
+  tags: tunnel_mgt
+  notify: restart assh
+
+- name: Create .ssh dir for mon user
+  file: 
+     dest="{{zabbix_server_tunnel_home}}/.ssh" 
+     state=directory 
+     mode=700 
+     owner="{{zabbix_server_tunnel_user}}"
+  tags: tunnel_mgt
+  notify: restart assh
+
+- name: Deploy mon ssh public key
+  authorized_key: 
+     user={{zabbix_server_tunnel_user}}
+     key="{{zabbix_server_tunnel_pub_key}}"
+  tags: tunnel_mgt
+  notify: restart assh
+
+- name: Deploy mon ssh private key
+  template: 
+     src="assh/id_rsa.j2"
+     dest="{{zabbix_server_tunnel_home}}/.ssh/id_rsa"
+     owner="{{zabbix_server_tunnel_user}}"
+     mode=600
+  with_items: zabbix_server_tunnel_priv_key
+  tags: tunnel_mgt
+  notify: restart assh
+
+- name: Creat assh directory
+  file: 
+     dest="{{item}}/"
+     owner="{{zabbix_server_tunnel_user}}"
+     mode=0755
+     state=directory
+  with_items:
+     - "{{zabbix_server_tunnel_basedir}}"
+     - "{{zabbix_server_tunnel_etc}}"
+     - "{{zabbix_server_tunnel_basedir}}/keys"
+     - "{{zabbix_server_tunnel_basedir}}/logs"
+     - "{{zabbix_server_tunnel_basedir}}/var"
+     - "{{zabbix_server_tunnel_basedir}}/var/lock"
+     - "{{zabbix_server_tunnel_basedir}}/var/lock/subsys"
+     - "{{zabbix_server_tunnel_basedir}}/var/run"
+     - "{{zabbix_server_tunnel_basedir}}/var/run/autossh"
+  tags: tunnel_mgt
+
+- name: Deploy assh binary
+  template: 
+     src=assh/assh.j2
+     dest="{{zabbix_server_tunnel_bin}}"
+     owner="{{zabbix_server_tunnel_user}}"     
+     mode=0755
+  tags: tunnel_mgt
+  notify: restart assh
+
+- name: Deploy support functions file
+  template: 
+     src=assh/functions.j2
+     dest="{{zabbix_server_tunnel_basedir}}/functions"
+     owner="{{zabbix_server_tunnel_user}}"     
+     mode=0755
+  tags: tunnel_mgt
+  notify: restart assh
+
+- name: Create service autossh link
+  file: 
+     src="{{zabbix_server_tunnel_bin}}"
+     dest="/etc/init.d/assh"
+     owner=root
+     group=root
+     state=link
+  tags: tunnel_mgt

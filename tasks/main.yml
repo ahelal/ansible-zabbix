@@ -1,0 +1,12 @@
+---
+
+ - name: Include postgresql if defined
+   include: postgresql.yml
+   when: "zabbix_server_db_type == 'pgsql'"
+
+ - name: Zabbix zabbix_server
+   include: zabbix_server.yml
+
+ - name: SSH Tunnel management for zabbix
+   include: tunnel_mgt.yml
+   when: "zabbix_server_tunnel == True"

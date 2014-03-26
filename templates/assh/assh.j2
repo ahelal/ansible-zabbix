@@ -1,0 +1,241 @@
+#!/bin/bash
+#
+# autossh . Startup script for autossh
+
+# chkconfig: 2345 25 40
+# description: Maintain persistent SSH tunnels
+# processname: autossh
+# pidfile: /var/run/autossh.pid
+
+# Copyright 2012 - Jean-Sebastien Morisset - http://surniaulula.com/
+#
+# http://surniaulula.com/2012/12/10/autossh-startup-script-for-multiple-tunnels/
+#
+# This script is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This script is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details at http://www.gnu.org/licenses/.
+
+# Tweaked to work on ubuntu by Adham Helal
+#
+#
+
+# Changelog:
+#
+# 2013/06/21 - Reset the $forward_list variable at the start() to prevent the
+# accumulation of ports for each config loop. Also added support for socks
+# proxies. Thanks to Chris for pointing out the issue in the comments.
+
+homeDir={{zabbix_server_tunnel_basedir}}
+
+# Source function library
+. $homeDir/functions
+
+
+RETVAL=0
+prog="autossh"
+autossh="/usr/bin/autossh"
+
+
+[ ! -d $homeDir/var/run/$prog ] && mkdir -p $homeDir/var/run/$prog
+
+start() {
+    config="$1"
+    cfname=`basename $config`
+    forward_list=""
+
+    # make sure we have a config file
+    if [ ! -f "$config" ]
+    then
+        failure
+        echo "$prog $cfname: $config missing"
+        return 1
+    fi
+
+    . $config
+
+    # make sure all variables have been defined in config
+    for var in \
+        ServerAliveInterval ServerAliveCountMax StrictHostKeyChecking \
+        LocalUser IdentityFile RemoteUser RemoteHost RemotePort tunName
+    do eval "
+        if [ -z \$$var ]
+        then
+            failure
+            echo \"$prog $cfname: $var variable empty.\"
+            return 1
+        fi
+        "
+    done
+
+    if [ ${{ "{#" }}ForwardPort[*]} -eq 0 ]
+    then
+        failure
+        echo "$prog $cfname: ForwardPort array empty"
+        return 1
+    fi
+
+    for fwd in "${ForwardPort[@]}"
+    do
+        case "$fwd" in
+        D\ *:*|R\ *:*:*:*|L\ *:*:*:*) forward_list+="-$fwd " ;;
+        *)    failure
+            echo "$prog $cfname: $fwd format unknown"
+            return 1
+            ;;
+        esac
+    done
+
+    # define the pidfile variable for autossh (created by autossh)
+    # check if pidfile already exists -- don't start another instance if pidfile exists
+    AUTOSSH_PIDFILE="$homeDir/var/run/$prog/$cfname.pid"
+    if [ -e $AUTOSSH_PIDFILE ]
+    then
+        failure
+        echo "$prog $cfname: $AUTOSSH_PIDFILE already exists"
+        return 1
+    fi
+
+    echo -n "Starting $prog $cfname: "
+
+    # before switching-users, make sure pidfile is created and user has write permission
+    touch $AUTOSSH_PIDFILE
+    chown $LocalUser $AUTOSSH_PIDFILE
+
+    # start autossh as the user defined in the config file
+    # the pidfile must be re-defined in the new environment
+    su - $LocalUser -c "
+        AUTOSSH_PIDFILE=$AUTOSSH_PIDFILE;
+        AUTOSSH_PORT=0;
+	AUTOSSH_LOGFILE=$homeDir/logs/$tunName-$RemoteUser@$RemoteHost.log;
+        export AUTOSSH_PIDFILE AUTOSSH_PORT AUTOSSH_LOGFILE;
+        $autossh -q -N -p $RemotePort \
+        -i $IdentityFile \
+        -o ServerAliveInterval=$ServerAliveInterval \
+        -o ServerAliveCountMax=$ServerAliveCountMax \
+        -o StrictHostKeyChecking=$StrictHostKeyChecking \
+        $forward_list $RemoteUser@$RemoteHost -f;"
+
+    # check to make sure pidfile was created
+    if [ ! -f $AUTOSSH_PIDFILE ]
+    then
+        failure
+        echo "`basename $AUTOSSH_PIDFILE` not created"
+        return 1
+    fi
+
+    success
+    echo
+    touch $homeDir/var/lock/subsys/$prog
+}
+
+stop() {
+    config="$1"
+    # if no config names (on the command-line), stop all autossh processes
+    if [ -z "$config" ]
+    then
+        echo -n "Stopping all $prog: "
+        killproc $autossh
+        RETVAL=$?
+        echo
+        if [ $RETVAL -eq 0 ]
+        then
+            rm -f $homeDir/var/lock/subsys/$prog
+            rm -f $homeDir/var/run/$prog/*.pid
+        fi
+    else
+        cfname="`basename $config`"
+        pidfile="$homeDir/var/run/$prog/$cfname.pid"
+        if [ ! -f $pidfile ]
+        then
+            failure
+            echo "$prog $cfname: $pidfile missing"
+            return 1
+        else
+            echo -n $"Stopping $prog $cfname: "
+            killproc -p "$homeDir/var/run/$prog/$cfname.pid" "$prog $cfname"
+            RETVAL=$?
+            echo
+            [ $RETVAL -eq 0 ] && rm -f $homeDir/var/run/$prog/$cfname.pid
+        fi
+    fi
+    return $RETVAL
+}
+
+# save the action name, and shift the command-line array
+# all remaining command-line arguments could be config names
+action="$1"
+shift
+
+case "$action" in
+start)
+    if [ -z "$1" ]
+    then
+        # if no config names on the command-line, start all /etc/autossh/ configs found
+        for config in `echo $homeDir/etc/$prog/${cfname:='*'}`
+        do $action $config; done
+    else
+        # start only the config files specified on the command-line
+        for cfname in "$@"
+        do $action $homeDir/etc/$prog/$cfname; done
+    fi
+    ;;
+stop)
+    if [ -z "$1" ]
+    then
+        # if no config names on the command-line, stop all autossh processes
+        $action
+    else
+        # stop only the config files specified on the command-line
+        for cfname in "$@"
+        do $action $homeDir/etc/$prog/$cfname; done
+    fi
+    ;;
+restart)
+    # re-execute this script, with the stop and start action names instead
+    $0 stop "$@"
+    $0 start "$@"
+    ;;
+status)
+    if [ -z "$1" ]
+    then
+        # if no config names on the command-line, show all autossh pids
+        status $autossh
+        RETVAL=$?
+    else
+        # only show the status of config files specified on the command-line
+        for cfname in "$@"
+        do
+            config="$homeDir/etc/$prog/$cfname"
+            # if the config file is missing, echo an error message
+            if [ -f $config ]
+            then
+                cfname="`basename $config`"
+                pidfile="$homeDir/var/run/$prog/$cfname.pid"
+                # if the pidfile is missing, echo an error message
+                if [ -f $pidfile ]
+                then
+                    status -p "$pidfile" "$prog $cfname"
+                    RETVAL=$?
+                else
+                    echo "$pidfile missing"
+                    RETVAL=1
+                fi
+            else
+                echo "$config missing"
+                RETVAL=1
+            fi
+        done
+    fi
+    ;;
+*)
+    echo "Usage: $0 {start|stop|restart|status} {config names...}"
+    RETVAL=1
+    ;;
+esac
+exit $RETVAL

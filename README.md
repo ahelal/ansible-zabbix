@@ -1,0 +1,113 @@
+#Readme
+This ansible role deploys zabbix for Ubuntu 12.04 (tested on vagrant)
+
+##Prerequisite
+* Having ansible installed on your workstation. 
+* *Optional* postgresql and mysql server (this playbook can install postgresql and mysql(experimental) if you download dependency)
+* *Optional* Use Ansible Zabbix module to dynamically add Zabbix host groups and hosts to your Zabbix server 
+
+##How to install
+* Use github to clone/fork in your role directory
+* ansible galaxy ```ansible-galaxy install adham.helal.zabbix_server```
+* *Note:* if you intend to install database I would recommend the following (You can use different roles but itest with those)
+  * ```ansible-galaxy install Ansibles.postgresql```
+  * ```ansible-galaxy install Ansibles.mysql```
+
+## Design
+With Zabbix it easy to change from one design to another, at least in theory. I am not going to cover the design here only the basics.
+Zabbix playbook has the following component
+* Database (This playbook support postgresql and mysql)
+* Zabbix Server or Zabbix Proxy server
+* Zabbix Frontend
+* Zabbix agent (Will be installed by default)
+* SSH tunnel (to secure communication and to add authentication)
+* Zabbix Java gateway (currently not supported)
+
+
+### Types of zabbix Installation
+1. Standalone
+2. Distributed
+3- HA (not supported) 
+
+
+### Standalone
+Simplest installation and is the default of this playbook. Deploy Zabbix server,Zabbix Frontend and the DB one the same host.Most probably that can handle at least a couple of hundreds hosts if deployed on reasonable server.
+
+### Distributed
+Deploy components on different hosts. A common design is to deploy DB on a host, fronetend on another and a central server. Then, if needed N proxy servers. Depending on your use you might want to deploy with different settings
+
+```zabbix_server_install : True``` Deploy  zabbix 'server' or ‘proxy‘
+
+```zabbix_server_install_type : server``` Deploy  zabbix  either 'server' or ‘proxy‘
+
+```zabbix_server_front_install : True``` Deploy frontend php and apache
+
+```zabbix_server_db_install : True``` Deploy database
+
+
+
+### HA 
+This can't be covered as it needs very custom configuration for databases, load balancers and other tools depending on your design. If you venture to build such a system you most probably can build on top of this playbook also. Here are some resources that can help you.
+* https://www.zabbix.org/wiki/Docs/howto/high_availability
+* http://blog.zabbix.com/scalable-zabbix-lessons-on-hitting-9400-nvps/2615/
+
+
+##Variables 
+All default variables are located **defaults/main.yml**.
+
+  - *zabbix_server_host:*  Your zabbix server  ```zabbix_server_host: "zabbix.example.com"```
+
+  - *zabbix_server_name:* Zabbix server name  ```zabbix_server_name : "Zabbix Server"```
+  
+  - *zabbix_server_timezone:* Time zone  ```zabbix_server_timezone : ""America/Los_Angeles"``
+
+  - *zabbix_server_db_type:* DB type either pgsql or mysql   ```zabbix_server_db_type : "pgsql"```
+  
+  - *zabbix_server_db_host:* DB hostname   ```zabbix_server_db_host : "localhost"```    
+  
+  - *zabbix_server_db_user:* DB username   ```zabbix_server_db_user : "zabbix"```
+
+  - *zabbix_server_db_pass:* DB password  ```zabbix_server_db_pass : "password"```
+
+  - *zabbix_server_db_name:* DB name ```zabbix_server_db_name : "zabbix"```
+  
+  - *zabbix_server_db_port:* DB port ```zabbix_server_db_port : "5432"```
+
+##Zabbix over SSH
+** Optionally ** By default Zabbix communication between agent and server is in plain text and no authentication. If monitoring over the internet not in your private network you might want to use ssh tunneling.
+
+Here is an example of how Zabbix agent over ssh will work
+- A user will be created on the target host and key will be deployed that user has no terminal rights and can only bind to one port lets say the default port 10500
+- Our Zabbix agent(s) will connect to **localhost** **10500** 
+- A tunnel will be created so connection to that part will be tunneled to the server
+- On the server a different port will be assigned to each host. So you can add hosts like localhost AssignedPort
+- Reverse tunnel is used for active check
+
+### Configuring 
+*zabbix_server_tunnel:* Enable ssh tunneling ```zabbix_server_tunnel : True```
+
+You would need to configure this for each host you
+*ZabbixSSH:* Assigned port for each host must be unique  port ``ZabbixSSH  : 50501```
+
+For more details and other options look at 
+1. defaults/main.yml tunnel section
+2. templates/tunnel_mgt.j2
+
+**Note:** 
+* I plan to release the Zabbix agent tunnel playbooks so it will be easier 
+* The ssh tunnel use autossh and a bash scripts from Jean-Sebastien Morisset - http://surniaulula.com
+
+##Configure
+You can configure your variables in ansible with one of the following
+
+ * Create a variable in host/group variables directory (recommend)
+ * Editing var/main.yml
+ * Run ansible-playbook with -e
+ * Edit the default/main.yml (not recommended)
+
+##Run
+    
+  ```ansible-playbook -l hostname zabbix_server_postgresql.yml```
+
+
+
