@@ -3,26 +3,25 @@ This ansible role deploys zabbix for Ubuntu 12.04 (tested on vagrant)
 
 ##Prerequisite
 * Having ansible installed on your workstation. 
-* *Optional* postgresql and mysql server (this playbook can install postgresql and mysql(experimental) if you download dependency)
+* *Optional* postgresql and mysql server (this playbook can install postgresql and mysql(experimental)
 * *Optional* Use Ansible Zabbix module to dynamically add Zabbix host groups and hosts to your Zabbix server 
 
 ##How to install
 * Use github to clone/fork in your role directory
 * ansible galaxy ```ansible-galaxy install adham.helal.zabbix_server```
-* *Note:* if you intend to install database I would recommend the following (You can use different roles but itest with those)
+* *Note:* if you intend to install database I would recommend to use one of the following
   * ```ansible-galaxy install Ansibles.postgresql```
   * ```ansible-galaxy install Ansibles.mysql```
 
 ## Design
-With Zabbix it easy to change from one design to another, at least in theory. I am not going to cover the design here only the basics.
-Zabbix playbook has the following component
-* Database (This playbook support postgresql and mysql)
+With Zabbix it is easy to change from one design to another, at least in theory. I am not going to cover the design here only the basics.
+Zabbix  has the following component
+* Database (This playbook support postgresql and mysql(experimental) )
 * Zabbix Server or Zabbix Proxy server
-* Zabbix Frontend
+* Zabbix Frontend (Apache2 and php)
 * Zabbix agent (Will be installed by default)
 * SSH tunnel (to secure communication and to add authentication)
 * Zabbix Java gateway (currently not supported)
-
 
 ### Types of zabbix Installation
 1. Standalone
@@ -31,10 +30,12 @@ Zabbix playbook has the following component
 
 
 ### Standalone
-Simplest installation and is the default of this playbook. Deploy Zabbix server,Zabbix Frontend and the DB one the same host.Most probably that can handle at least a couple of hundreds hosts if deployed on reasonable server.
+Simplest installation and is the default of this playbook. Deploy Zabbix server, Frontend and the DB one the same host. Most probably that can handle at least a couple of hundreds hosts if deployed on reasonable server. And I would recommand to play with that first
 
 ### Distributed
-Deploy components on different hosts. A common design is to deploy DB on a host, fronetend on another and a central server. Then, if needed N proxy servers. Depending on your use you might want to deploy with different settings
+Deploy components on different hosts. A common design is to deploy Zabbix server on a host.  DB on another and fronetend on another. Then, if needed N proxy servers. Depending on your use you might want to deploy with different settings
+
+By changing the following varaibles you can manage what to deploy on your host.
 
 ```zabbix_server_install : True``` Deploy  zabbix 'server' or ‘proxy‘
 
@@ -74,7 +75,7 @@ All default variables are located **defaults/main.yml**.
   - *zabbix_server_db_port:* DB port ```zabbix_server_db_port : "5432"```
 
 ##Zabbix over SSH
-** Optionally ** By default Zabbix communication between agent and server is in plain text and no authentication. If monitoring over the internet not in your private network you might want to use ssh tunneling.
+** Optionally ** By default Zabbix communication between agent and server is in plain text and no authentication. If monitoring over the internet you might want to use ssh tunneling.
 
 Here is an example of how Zabbix agent over ssh will work
 - A user will be created on the target host and key will be deployed that user has no terminal rights and can only bind to one port lets say the default port 10500
