@@ -6,7 +6,9 @@ zabbix_server_revision       : '2'
 
 ##Zabbix Frontend (PHP/API) Options
 zabbix_server_front_install  : True  ## Install frontend and dependency True or False
-zabbix_server_host           : "{{ansible_ssh_host}}"  
+zabbix_server_host           : "{{zabbix_server_tunnel_hostname
+zabbix_server_tunnel_hostname
+zabbix_server_tunnel_hostname}}"  
 zabbix_server_name           : "{{inventory_hostname}}"
 zabbix_server_timezone       : "Europe/Berlin" ## check http://php.net/manual/en/timezones.php
 zabbix_server_front_root      : "/var/www"
@@ -51,6 +53,8 @@ zabbix_server_tunnel_basedir  : "{{zabbix_server_tunnel_home}}/{{zabbix_server_t
 zabbix_server_tunnel_bin      : "{{zabbix_server_tunnel_basedir}}/assh"
 zabbix_server_tunnel_etc      : "{{zabbix_server_tunnel_basedir}}/etc/autossh"
 zabbix_server_tunnel_identity : "~/.ssh/id_rsa"
+zabbix_server_tunnel_basePort : 11000 ## if you will use auto port assigning
+
 ## WARNNING This is TEST KEY PLEASE REPLACE THEM
 zabbix_server_tunnel_pub_key  : ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCootXD63hexEQnbCmKGC7DjFSWxkqJ2neaC5S6POEdgwo7jQ60JWy0VCm5JS5d2ZNDQh+vi1wZ2cTr6n9X9bAkYhQ/eACmzYBjf8I8AXcqaigAOjRMLADU2qQfZmnRGyOLaGDI/EH52yBjeZHbgQdJOGrB07qgAu2facA2bd6kvI8eLwCx5yjqA+mInYEewRYrr5tUduGFdPhmyoKSGpaEeWWkLhafTj9eGRMSB3unBcMtux+LxXH4TfWgVBmWNVbr2Mcv+M6tYxix/iKniBLBUH/AfM/dTHlk38y2mjemUMUc/HBW+HmH3NXMwOks8po6Iohh8JNhywUlLKN9MvB7
 zabbix_server_tunnel_priv_key : 

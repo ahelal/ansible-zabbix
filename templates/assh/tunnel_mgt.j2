@@ -1,6 +1,19 @@
-{% if hostvars[item]["ZabbixSSH"] is defined %}
-# let autossh re-connect.
-# Host: {{hostvars[item]["ansible_ssh_host"]}}
+{% if item.0 is number %}
+{{ item.0|pprint }} 
+{% set tunnelPort = item.0 + zabbix_server_tunnel_basePort %}
+{% set tunnelHost = item.1 %}
+{% set tunnelMethod = "Dynamic Ports" %}
+{% elif item is string and hostvars[item]["ZabbixSSH"] is defined  %}
+{% set tunnelPort = hostvars[item]["ZabbixSSH"] %}
+{% set tunnelMethod = "Static Ports" %}
+{% set tunnelHost = item %}
+{% endif %}
+##{{ ansible_managed }}
+{% if tunnelPort is defined %}
+{% set usePort=hostvars[tunnelHost]["ansible_ssh_port"]|default("22") %}
+{% set useHost=hostvars[tunnelHost]["ansible_ssh_host"]|default(inventory_hostname) %}
+## Ansible port method {{tunnelMethod}}
+## Host: {{useHost}}
 
 ServerAliveInterval="30"
 ServerAliveCountMax="3"
@@ -9,20 +22,16 @@ StrictHostKeyChecking="no"
 LocalUser="{{zabbix_server_tunnel_user}}"
 IdentityFile="{{zabbix_server_tunnel_identity}}"
 
-tunName="{{ hostvars[item]["inventory_hostname"] }}"
+tunName="{{useHost}}"
 
 RemoteUser="{{zabbix_server_tunnel_remote}}"
-RemoteHost="{{hostvars[item]["ansible_ssh_host"]}}"
-{% if hostvars[item]["ansible_ssh_port"] is defined %}
-RemotePort="{{hostvars[item]["ansible_ssh_port"]}}"
-{% else %}
-RemotePort="22"
-{% endif %}
+RemoteHost="{{useHost}}"
+RemotePort="{{usePort}}"
 ForwardPort=(
     "R localhost:10051:localhost:10051"
-    "L localhost:{{hostvars[item]["ZabbixSSH"]}}:localhost:10050"
+    "L localhost:{{tunnelPort}}:localhost:10050"
 )
 
 {% else %}
-## Your variables are not defined correctly 
+## Your variables are not defined correctly to manage hosts
 {% endif %}
