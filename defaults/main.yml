@@ -6,12 +6,10 @@ zabbix_server_revision       : '2'
 
 ##Zabbix Frontend (PHP/API) Options
 zabbix_server_front_install  : True  ## Install frontend and dependency True or False
-zabbix_server_host           : "{{zabbix_server_tunnel_hostname
-zabbix_server_tunnel_hostname
-zabbix_server_tunnel_hostname}}"  
+zabbix_server_host           : "{{ansible_ssh_host}}"
 zabbix_server_name           : "{{inventory_hostname}}"
 zabbix_server_timezone       : "Europe/Berlin" ## check http://php.net/manual/en/timezones.php
-zabbix_server_front_root      : "/var/www"
+zabbix_server_front_root     : "/var/www"
 zabbix_server_front_redirect : True  ## Deploys an html to root of apache to redirect to /zabbix
 ##API Connection (optional)
 zabbix_server_url            : "http://{{zabbix_server_host}}/zabbix" 
