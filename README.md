@@ -87,12 +87,13 @@ Here is an example of how Zabbix agent over ssh will work
 ### Configuring 
 
 For more details and other options look at 
+
 1. defaults/main.yml tunnel section
 2. templates/tunnel_mgt.j2
 
 First you need to enable *zabbix_server_tunnel:*  ```zabbix_server_tunnel : True``` and assigned port for each host must be unique   this can be managed.
 
-1. **Statically**
+####1 **Statically**
 In your hostvars for each host ```ZabbixSSH: 11212``` and make sure every port is unique
 here is an example of tunnel creation task
 
@@ -110,7 +111,7 @@ here is an example of tunnel creation task
   tags       : tunnel_mgt
 ```
 
-2. **Dynamically**
+####2 **Dynamically**
 You can let the ```with_indexed_items``` loop and use that and add to base number. Have a look at templates/tunnel_mgt.j2
 
 ```
@@ -129,11 +130,8 @@ You can let the ```with_indexed_items``` loop and use that and add to base numbe
 
 **Note: You would need to use the same code to create hosts in zabbix to match the ports same logic**
 
-3. Find another way and let me know :) 
+####3 Find another way and let me know :) 
 
-
-**Note:** 
-* The ssh tunnel use autossh and a bash scripts from Jean-Sebastien Morisset - http://surniaulula.com
 
 ##Configure
 You can configure your variables in ansible with one of the following
