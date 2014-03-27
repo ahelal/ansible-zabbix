@@ -1,6 +1,6 @@
 ---
 
-- name: Create zabbix postgresql user
+- name: postgresql | Create zabbix postgresql user
   postgresql_user: 
      name="{{zabbix_server_db_user}}"
      password="{{zabbix_server_db_pass}}"
@@ -8,7 +8,7 @@
   notify: restart apache2
   tags: postgresql_server
 
-- name: Create Zabbix postgresql database
+- name: postgresql | Create Zabbix postgresql database
   postgresql_db: 
      name="{{zabbix_server_db_name}}"
      owner="{{zabbix_server_db_user}}"

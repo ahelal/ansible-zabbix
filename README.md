@@ -78,24 +78,61 @@ All default variables are located **defaults/main.yml**.
 By default Zabbix communication between agent and server is in plain text and no authentication. If monitoring over the internet you might want to use ssh tunneling.
 
 Here is an example of how Zabbix agent over ssh will work
-- A user will be created on the target host and key will be deployed that user has no terminal rights and can only bind to one port lets say the default port 10500
+- A user will be created on the target host and key will be deployed that user has no terminal rights and can only bind to one port default port 10500
 - Our Zabbix agent(s) will connect to **localhost** **10500** 
 - A tunnel will be created so connection to that part will be tunneled to the server
 - On the server a different port will be assigned to each host. So you can add hosts like localhost AssignedPort
 - Reverse tunnel is used for active check
 
 ### Configuring 
-*zabbix_server_tunnel:* Enable ssh tunneling ```zabbix_server_tunnel : True```
-
-You would need to configure this for each host you
-*ZabbixSSH:* Assigned port for each host must be unique  port ``ZabbixSSH  : 50501```
 
 For more details and other options look at 
 1. defaults/main.yml tunnel section
 2. templates/tunnel_mgt.j2
 
+First you need to enable *zabbix_server_tunnel:*  ```zabbix_server_tunnel : True``` and assigned port for each host must be unique   this can be managed.
+
+1. **Statically**
+In your hostvars for each host ```ZabbixSSH: 11212``` and make sure every port is unique
+here is an example of tunnel creation task
+
+```
+##You must define a per host variable ZabbixSSH with the desired port
+- name : tunnel_mgt | Loop over inventory and create assh connection 
+  template   :
+    src=templates/assh/tunnel_mgt.j2
+    dest={{zabbix_server_tunnel_etc}}/{{hostvars[item]["inventory_hostname"]}}
+    owner="{{zabbix_server_tunnel_user}}"
+    mode=0644 
+  with_items : groups['all']
+  when       : "zabbix_server_tunnel == True"
+  notify     : restart assh
+  tags       : tunnel_mgt
+```
+
+2. **Dynamically**
+You can let the ```with_indexed_items``` loop and use that and add to base number. Have a look at templates/tunnel_mgt.j2
+
+```
+##A more dynamic way to do that is to use sequence
+- name : tunnel_mgt | Loop over inventory and create assh connection
+  template   :
+    src=templates/assh/tunnel_mgt.j2
+    dest={{zabbix_server_tunnel_etc}}/{{hostvars[item.1]["inventory_hostname"]}}
+    owner="{{zabbix_server_tunnel_user}}"
+    mode=0644 
+  with_indexed_items: groups['all']
+  when       : "zabbix_server_tunnel == True"
+  notify     : restart assh
+  tags       : tunnel_mgt
+```
+
+**Note: You would need to use the same code to create hosts in zabbix to match the ports same logic**
+
+3. Find another way and let me know :) 
+
+
 **Note:** 
-* I plan to release the Zabbix agent tunnel playbooks so it will be easier 
 * The ssh tunnel use autossh and a bash scripts from Jean-Sebastien Morisset - http://surniaulula.com
 
 ##Configure
@@ -109,6 +146,3 @@ You can configure your variables in ansible with one of the following
 ##Run
     
   ```ansible-playbook -l hostname zabbix_server_postgresql.yml```
-
-
-
