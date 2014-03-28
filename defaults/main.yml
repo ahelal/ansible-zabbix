@@ -29,6 +29,7 @@ zabbix_server_db_user        : "zabbix"
 zabbix_server_db_pass        : "READRdXxc&2zgvgzs_blaaaaaa" ##TODO: Change to by random
 zabbix_server_db_host        : "localhost" ##by default same server
 zabbix_server_db_port        : 5432
+zabbix_server_db_intial_dir  : "/usr/share/zabbix-server-{{zabbix_server_db_type}}"
 
 ## Zabbix Server Extra options
 zabbix_server_LogFile        : "/var/log/zabbix/zabbix_server.log"
@@ -87,7 +88,7 @@ zabbix_server_tunnel_priv_key :
 ## Compilation of variables (No need to change them unless you have issues)
 zabbix_server_version       : "{{zabbix_server_major}}.{{zabbix_server_minor}}.{{zabbix_server_revision}}"
 zabbix_server_ubuntu        : "1:{{zabbix_server_version}}-1+precise"
-zabbix_php_db               : "{%if zabbix_server_db_type == 'pgsql' %}POSTGRESQL{% else %}ERROR_UNKNOWN_DB{% endif %}"
+zabbix_php_db               : "{%if zabbix_server_db_type == 'pgsql' %}POSTGRESQL{% elif zabbix_server_db_type == 'mysql' %}MYSQL{% else %}ERROR_UNKNOWN_DB{% endif %}"
 
 
 

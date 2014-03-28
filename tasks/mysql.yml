@@ -1,0 +1,44 @@
+---
+
+- name: mysql | Create Zabbix mysql database 
+  mysql_db:
+    name: "{{zabbix_server_db_name}}"
+    state: present
+  notify: restart apache2
+  tags: mysql_server
+
+- name: mysql | Create zabbix mysql user
+  mysql_user:
+    name: "{{zabbix_server_db_user}}"
+    password: "{{zabbix_server_db_pass}}"
+    priv: "{{zabbix_server_db_name}}.*:ALL"
+    state: present
+    host: "{{zabbix_server_db_host}}"
+  tags: mysql_server
+
+##
+##TODO Replace the code below with a real idemptonent code
+##
+- name: mysql | Import initial schema
+  shell: 
+     mysql -uroot {{zabbix_server_db_name}} < {{zabbix_server_db_intial_dir}}/schema.sql
+  register: mysql_schema
+  changed_when: "mysql_schema.rc == 0"
+  failed_when: "mysql_schema.rc != 0 and 'already exists' not in mysql_schema.stderr"
+  tags: mysql_server
+
+- name: mysql | Import initial images
+  shell: 
+     mysql -uroot {{zabbix_server_db_name}} < {{zabbix_server_db_intial_dir}}/images.sql
+  register: mysql_images
+  changed_when: "mysql_images.rc == 0"
+  failed_when: "mysql_images.rc != 0 and 'Duplicate entry' not in mysql_images.stderr"
+  tags: mysql_server
+
+- name: mysql | Import initial data
+  shell: 
+     mysql -uroot {{zabbix_server_db_name}} < {{zabbix_server_db_intial_dir}}/data.sql
+  register: mysql_data
+  changed_when: "mysql_data.rc == 0"
+  failed_when: "mysql_data.rc != 0 and 'Duplicate entry' not in mysql_data.stderr"
+  tags: mysql_server

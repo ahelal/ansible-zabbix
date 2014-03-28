@@ -4,6 +4,10 @@
    include: postgresql.yml
    when: "zabbix_server_db_type == 'pgsql'"
 
+ - name: Include mysql if defined
+   include: mysql.yml
+   when: "zabbix_server_db_type == 'mysql'"
+
  - name: Zabbix zabbix_server
    include: zabbix_server.yml
 
