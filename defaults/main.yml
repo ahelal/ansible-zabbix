@@ -4,14 +4,27 @@ zabbix_server_major          : '2'
 zabbix_server_minor          : '2'
 zabbix_server_revision       : '2'
 
-##Zabbix Frontend (PHP/API) Options
-zabbix_server_front_install  : True  ## Install frontend and dependency True or False
+##Zabbix Server
 zabbix_server_host           : "{{ansible_ssh_host}}"
 zabbix_server_name           : "{{inventory_hostname}}"
-zabbix_server_timezone       : "Europe/Berlin" ## check http://php.net/manual/en/timezones.php
+## Zabbix Server Extra options
+zabbix_server_LogFile        : "/var/log/zabbix/zabbix_server.log"
+zabbix_server_LogFileSize    : 0    ## 0 - disable automatic log rotation.
+zabbix_server_DebugLevel     : 3    ## (0) no, (1) critical info (2) error info (3) warnings (4) A lots of infor)
+zabbix_server_PidFile        : "/var/run/zabbix/zabbix_server.pid"
+##Zabbix Server Frontend
+zabbix_server_front_install  : True  ## Install frontend and dependency True or False
 zabbix_server_front_root     : "/var/www"
 zabbix_server_front_redirect : True  ## Deploys an html to root of apache to redirect to /zabbix
-##API Connection (optional)
+zabbix_server_front_apache_conf       : "/etc/zabbix/apache.conf"
+##Zabbix Server PHP 
+zabbix_server_php_date_timezone       : "Europe/Berlin" ## check http://php.net/manual/en/timezones.php
+zabbix_server_php_max_input_time      : 300
+zabbix_server_php_upload_max_filesize : "2M"
+zabbix_server_php_post_max_size       : "16M"
+zabbix_server_php_memory_limit        : "128M"
+zabbix_server_php_max_execution_time  : 300
+##Zabbix API Connection (optional)
 zabbix_server_url            : "http://{{zabbix_server_host}}/zabbix" 
 zabbix_server_front_user     : "Admin"   ## fresh installation default 'Admin' (dont change unless you changed the user)
 zabbix_server_front_pass     : "zabbix"  ## fresh installation default 'Zabbix' (dont change unless you changed the password)
@@ -31,11 +44,6 @@ zabbix_server_db_host        : "localhost" ##by default same server
 zabbix_server_db_port        : 5432
 zabbix_server_db_intial_dir  : "/usr/share/zabbix-server-{{zabbix_server_db_type}}"
 
-## Zabbix Server Extra options
-zabbix_server_LogFile        : "/var/log/zabbix/zabbix_server.log"
-zabbix_server_LogFileSize    : 0    ## 0 - disable automatic log rotation.
-zabbix_server_DebugLevel     : 3    ## (0) no, (1) critical info (2) error info (3) warnings (4) A lots of infor)
-zabbix_server_PidFile        : "/var/run/zabbix/zabbix_server.pid"
 
 ##
 ## SSH tunnel management
