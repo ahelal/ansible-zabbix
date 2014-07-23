@@ -101,3 +101,14 @@
      group=www-data
      mode=644
   when: "zabbix_server_front_install == True and zabbix_server_front_redirect == True" 
+
+
+- name: zabbix_server | populate postgres database is populated
+  shell: 
+      psql {{ zabbix_server_db_name }} -h localhost  < {{item}} && sleep 3
+  with_items: zabbix_server_sql_files
+  when: postgres_db.changed and zabbix_server_db_type == 'pgsql'
+  sudo_user: postgres
+  
+
+

@@ -17,5 +17,8 @@
      lc_ctype='en_US.UTF-8'
      template='template0'
   sudo_user: postgres
+  register: postgres_db
   notify: restart apache2
+
   tags: postgresql_server    
+
