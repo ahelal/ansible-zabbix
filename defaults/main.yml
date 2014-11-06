@@ -31,7 +31,7 @@ zabbix_server_front_pass     : "zabbix"  ## fresh installation default 'Zabbix' 
 
 ## Zabbix Server options
 zabbix_server_install        : True    ## Install server True or False
-zabbix_server_install_type   : 'server'  ## Install zabbix 'server' or ‘proxy‘
+zabbix_server_install_type   : 'server'  ## Install zabbix 'server' or 'proxy'
 zabbix_server_port           : 10051     ## Default 10051
 
 ##Database options
