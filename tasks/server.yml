@@ -1,12 +1,10 @@
 ---
 
-- name: zabbix_server | Install Zabbix Server or proxy
+- name: zabbix_server | Install Zabbix Server
   apt: 
-     pkg="zabbix-{{ zabbix_server_install_type }}-{{ zabbix_server_db_type }}"="{{ zabbix_server_ubuntu }}"
+     pkg="zabbix-server-{{ zabbix_server_db_type }}"="{{ zabbix_server_ubuntu }}"
      state=present
      force=yes
-  when: "zabbix_server_install == True" 
-
 
 - name: zabbix_server | Zabbix server conf file
   template: 
@@ -15,14 +13,14 @@
      owner=zabbix
      group=zabbix
      mode=600
-  when: "zabbix_server_install == True and zabbix_server_install_type == 'server'"
+  notify: restart zabbix_server
 
-- name: zabbix_server | populate postgres database is populated
-  shell: 
-      psql {{ zabbix_server_db_name }} -h localhost  < {{item}} && sleep 3
-  with_items: zabbix_server_sql_files
-  when: postgres_db.changed and zabbix_server_db_type == 'pgsql'
-  sudo_user: postgres
+#- name: zabbix_server | populate postgres database is populated
+#  shell:
+#      psql {{ zabbix_server_db_name }} -h localhost  < {{item}} && sleep 3
+#  with_items: zabbix_server_sql_files
+#  when: postgres_db.changed and zabbix_server_db_type == 'pgsql'
+#  sudo_user: postgres
   
 
 

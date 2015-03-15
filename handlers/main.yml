@@ -5,11 +5,18 @@
     name=apache2
     state=reloaded
 
-- name: restart zabbix_server_or_proxy
+- name: restart zabbix_server
   service:
-    name=zabbix-{{zabbix_server_install_type}}
+    name=zabbix-server
     state=restarted
     enabled=yes
+
+- name: restart zabbix_proxy
+  service:
+    name=zabbix-proxy
+    state=restarted
+    enabled=yes
+
 
 - name: restart zabbix_agent
   service:

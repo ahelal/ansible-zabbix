@@ -29,8 +29,6 @@ zabbix_server_conf                    :
     FpingLocation                     : /usr/bin/fping
     Fping6Location                    : /usr/bin/fping6
 
-
-
 ## Zabbix Server Frontend
 zabbix_server_front_root              : "/var/www"
 zabbix_server_front_redirect          : True  ## Deploys an html to root of apache to redirect to /zabbix
@@ -43,7 +41,7 @@ zabbix_server_php_post_max_size       : "16M"
 zabbix_server_php_memory_limit        : "128M"
 zabbix_server_php_max_execution_time  : 300
 ## Zabbix API Connection (optional)
-zabbix_server_url                     : "http://{{zabbix_server_host}}/zabbix"
+zabbix_server_url                     : "http://{{ zabbix_server_host }}/zabbix"
 zabbix_server_front_user              : "Admin"   ## fresh installation default 'Admin' (dont change unless you changed the user)
 zabbix_server_front_pass              : "zabbix"  ## fresh installation default 'Zabbix' (dont change unless you changed the password)
 
