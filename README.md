@@ -1,10 +1,6 @@
 #Readme
 This ansible role deploys zabbix for Ubuntu 12.04 (tested on vagrant)
 
-##Related projects
-* Ansible Zabbix module to dynamically add Zabbix host groups and hosts to your Zabbix server https://github.com/ahelal/ansible-zabbix_modules
-* Ansible Zabbix agent to deploy agents on ubuntu nodes https://github.com/ahelal/ansible-zabbix_agent
-
 ##Prerequisite
 * Having ansible installed on your workstation. 
 * *Optional* postgresql and mysql server (this playbook can install postgresql and mysql(experimental)
