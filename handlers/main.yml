@@ -1,21 +1,18 @@
 ---
+
 - name: restart apache2
   service:
     name=apache2
     state=reloaded
-  notify: restart zabbix_server_or_proxy
-  when: "zabbix_server_front_install == True"
 
 - name: restart zabbix_server_or_proxy
   service:
     name=zabbix-{{zabbix_server_install_type}}
     state=restarted
     enabled=yes
-  when: "zabbix_server_install == True"
 
-- name: restart assh
+- name: restart zabbix_agent
   service:
-    name=assh
-    state=restarted
-    enabled=yes
-  when: "zabbix_server_tunnel == True"
+     name=zabbix-agent
+     state=restarted
+     enabled=yes

@@ -1,0 +1,45 @@
+---
+
+- name: frontend | Install frontend
+  apt:
+     pkg="zabbix-frontend-php"="{{ zabbix_server_ubuntu }}"
+     state=present
+     force=yes
+  when: "zabbix_server_front_install == True"
+
+- name: zabbix_server | Install pre dependency for PHP
+  apt:
+     pkg="{{ item }}"
+     state=present
+  with_items:
+     - php5-{{ zabbix_server_db_type }}
+  when: "zabbix_server_front_install == True"
+
+- name: zabbix_server | Zabbix server php conf
+  template:
+     src=zabbix_server/zabbix.conf.php
+     dest=/etc/zabbix/web
+     owner=www-data
+     group=www-data
+     mode=600
+  when: "zabbix_server_front_install == True"
+  notify: restart apache2
+
+- name: zabbix_server | apache config
+  template:
+     src=apache2/apache.conf.j2
+     dest="{{ zabbix_server_front_apache_conf }}"
+     owner=root
+     group=root
+     mode=0644
+  notify: restart apache2
+  when: "zabbix_server_front_install == True"
+
+- name: zabbix_server | Deploy html redirect
+  template:
+     src=zabbix_server/index.html.j2
+     dest="{{ zabbix_server_front_root }}/index.html"
+     owner=www-data
+     group=www-data
+     mode=644
+  when: "zabbix_server_front_install == True and zabbix_server_front_redirect == True"

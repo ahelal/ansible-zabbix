@@ -1,20 +1,21 @@
 ---
 
- - name: Include postgresql if defined
-   include: postgresql.yml
-   when: "zabbix_server_db_type == 'pgsql'"
+- include: common.yml
 
- - name: Include mysql if defined
-   include: mysql.yml
-   when: "zabbix_server_db_type == 'mysql'"
+- include: postgresql.yml
+  when: "zabbix_server_db_type == 'pgsql'"
 
- - name: Zabbix zabbix_server
-   include: zabbix_server.yml
+- include: mysql.yml
+  when: "zabbix_server_db_type == 'mysql'"
 
- - name: setup mysql database schema
-   include: mysql_init.yml
-   when: "zabbix_server_db_type == 'mysql'"
+- include: server.yml
+  when: zabbix_server_install
 
- - name: SSH Tunnel management for zabbix
-   include: tunnel_mgt.yml
-   when: "zabbix_server_tunnel == True"
+- include: frontend.yml
+  when: zabbix_server_front_install
+
+- include: agent.yml
+  when: zabbix_agent_install
+
+- include: mysql_init.yml
+  when: "zabbix_server_db_type == 'mysql'"

@@ -1,98 +1,65 @@
 
 ## zabbix Server version
-zabbix_server_major          : '2'
-zabbix_server_minor          : '2'
-zabbix_server_revision       : '4'
+zabbix_server_major                   : '2'
+zabbix_server_minor                   : '4'
+zabbix_server_revision                : '4'
 
-##Zabbix Server
-zabbix_server_host           : "{{ansible_ssh_host}}"
-zabbix_server_name           : "{{inventory_hostname}}"
-## Zabbix Server Extra options
-zabbix_server_LogFile        : "/var/log/zabbix/zabbix_server.log"
-zabbix_server_LogFileSize    : 0    ## 0 - disable automatic log rotation.
-zabbix_server_DebugLevel     : 3    ## (0) no, (1) critical info (2) error info (3) warnings (4) A lots of infor)
-zabbix_server_PidFile        : "/var/run/zabbix/zabbix_server.pid"
-##Zabbix Server Frontend
-zabbix_server_front_install  : True  ## Install frontend and dependency True or False
-zabbix_server_front_root     : "/var/www"
-zabbix_server_front_redirect : True  ## Deploys an html to root of apache to redirect to /zabbix
+## What compmentes to install
+zabbix_server_front_install           : False  ## Install frontend and dependency
+zabbix_server_install                 : False  ## Install server
+zabbix_server_proxy_install           : False  ## Install proxy server
+zabbix_agent_install                  : False  ## Install proxy server
+
+## Zabbix Server  Configuration
+zabbix_server_host                    : "{{ ansible_ssh_host | default(inventory_hostname) }}"
+zabbix_server_name                    : "{{ inventory_hostname }}"
+zabbix_server_port                    : 10051
+zabbix_server_conf                    :
+    ListenIP                          : 0.0.0.0
+    ListenPort                        : "{{ zabbix_server_port }}"
+    LogFile                           : /var/log/zabbix/zabbix_server.log
+    LogFileSize                       : 0
+    PidFile                           : /var/run/zabbix/zabbix_server.pid
+    DBHost                            : localhost
+    DBName                            : "{{ zabbix_server_db_name }}"
+    DBUser                            : "{{ zabbix_server_db_user }}"
+    DBPassword                        : "{{ zabbix_server_db_pass }}"
+    AlertScriptsPath                  : /usr/lib/zabbix/alertscripts
+    ExternalScripts                   : /usr/lib/zabbix/externalscripts
+    FpingLocation                     : /usr/bin/fping
+    Fping6Location                    : /usr/bin/fping6
+
+
+
+## Zabbix Server Frontend
+zabbix_server_front_root              : "/var/www"
+zabbix_server_front_redirect          : True  ## Deploys an html to root of apache to redirect to /zabbix
 zabbix_server_front_apache_conf       : "/etc/zabbix/apache.conf"
-##Zabbix Server PHP 
+## Zabbix Server PHP
 zabbix_server_php_date_timezone       : "Europe/Berlin" ## check http://php.net/manual/en/timezones.php
 zabbix_server_php_max_input_time      : 300
 zabbix_server_php_upload_max_filesize : "2M"
 zabbix_server_php_post_max_size       : "16M"
 zabbix_server_php_memory_limit        : "128M"
 zabbix_server_php_max_execution_time  : 300
-##Zabbix API Connection (optional)
-zabbix_server_url            : "http://{{zabbix_server_host}}/zabbix" 
-zabbix_server_front_user     : "Admin"   ## fresh installation default 'Admin' (dont change unless you changed the user)
-zabbix_server_front_pass     : "zabbix"  ## fresh installation default 'Zabbix' (dont change unless you changed the password)
+## Zabbix API Connection (optional)
+zabbix_server_url                     : "http://{{zabbix_server_host}}/zabbix"
+zabbix_server_front_user              : "Admin"   ## fresh installation default 'Admin' (dont change unless you changed the user)
+zabbix_server_front_pass              : "zabbix"  ## fresh installation default 'Zabbix' (dont change unless you changed the password)
 
 ## Zabbix Server options
-zabbix_server_install        : True    ## Install server True or False
-zabbix_server_install_type   : 'server'  ## Install zabbix 'server' or 'proxy'
-zabbix_server_port           : 10051     ## Default 10051
+# tODO remove
+zabbix_server_install_type            : 'server'  ## Install zabbix 'server' or 'proxy'
 
-##Database options
-zabbix_server_db_install     : False ## Install database True or False depands on other roles read the docs
-zabbix_server_db_type        : 'pgsql' ## pgsql or mysql
-zabbix_server_db_name        : "zabbix"
-zabbix_server_db_user        : "zabbix"
-zabbix_server_db_pass        : "READRdXxc&2zgvgzs_blaaaaaa" ##TODO: Change to by random
-zabbix_server_db_host        : "localhost" ##by default same server
-zabbix_server_db_port        : 5432
-zabbix_server_db_intial_dir  : "/usr/share/zabbix-server-{{zabbix_server_db_type}}"
+## Database options
+zabbix_server_db_type                 : 'pgsql' ## pgsql or mysql
+zabbix_server_db_name                 : "zabbix"
+zabbix_server_db_user                 : "zabbix"
+zabbix_server_db_pass                 : "READRdXxc&2zgvgzs_blaaaaaa"
+zabbix_server_db_host                 : "localhost"
+zabbix_server_db_port                 : 5432
+zabbix_server_db_intial_dir           : "/usr/share/zabbix-server-{{zabbix_server_db_type}}"
 
-
-##
-## SSH tunnel management
-##
-##   Zabbix by default does not have authentication and encryption 
-##   if your using zabbix to monitor hosts in a non private network you can use ssh tunnel
-zabbix_server_tunnel          : False
-zabbix_server_tunnel_user     : "mon"
-zabbix_server_tunnel_group    : "mon"
-zabbix_server_tunnel_remote   : "mon" ## Remote user
-zabbix_server_tunnel_home     : "/home/{{zabbix_server_tunnel_user}}"
-zabbix_server_tunnel_name     : "tunnelMgt"
-zabbix_server_tunnel_basedir  : "{{zabbix_server_tunnel_home}}/{{zabbix_server_tunnel_name}}"
-zabbix_server_tunnel_bin      : "{{zabbix_server_tunnel_basedir}}/assh"
-zabbix_server_tunnel_etc      : "{{zabbix_server_tunnel_basedir}}/etc/autossh"
-zabbix_server_tunnel_identity : "~/.ssh/id_rsa"
-zabbix_server_tunnel_basePort : 11000 ## if you will use auto port assigning
-
-## WARNNING This is TEST KEY PLEASE REPLACE THEM
-zabbix_server_tunnel_pub_key  : ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCootXD63hexEQnbCmKGC7DjFSWxkqJ2neaC5S6POEdgwo7jQ60JWy0VCm5JS5d2ZNDQh+vi1wZ2cTr6n9X9bAkYhQ/eACmzYBjf8I8AXcqaigAOjRMLADU2qQfZmnRGyOLaGDI/EH52yBjeZHbgQdJOGrB07qgAu2facA2bd6kvI8eLwCx5yjqA+mInYEewRYrr5tUduGFdPhmyoKSGpaEeWWkLhafTj9eGRMSB3unBcMtux+LxXH4TfWgVBmWNVbr2Mcv+M6tYxix/iKniBLBUH/AfM/dTHlk38y2mjemUMUc/HBW+HmH3NXMwOks8po6Iohh8JNhywUlLKN9MvB7
-zabbix_server_tunnel_priv_key : 
-                                |
-                                -----BEGIN RSA PRIVATE KEY-----
-                                MIIEogIBAAKCAQEAqKLVw+t4XsREJ2wpihguw4xUlsZKidp3mguUujzhHYMKO40O
-                                tCVstFQpuSUuXdmTQ0Ifr4tcGdnE6+p/V/WwJGIUP3gAps2AY3/CPAF3KmooADo0
-                                TCwA1NqkH2Zp0Rsji2hgyPxB+dsgY3mR24EHSThqwdO6oALtn2nANm3epLyPHi8A
-                                seco6gPpiJ2BHsEWK6+bVHbhhXT4ZsqCkhqWhHllpC4Wn04/XhkTEgd7pwXDLbsf
-                                i8Vx+E31oFQZljVW69jHL/jOrWMYsf4ip4gSwVB/wHzP3Ux5ZN/Mtpo3plDFHPxw
-                                Vvh5h9zVzMDpLPKaOiKIYfCTYcsFJSyjfTLwewIDAQABAoIBAGfUMme5sFgw4YGg
-                                UActkoVl/qMCndw4vdED9mOgnj5Mc11tITN7o214MGRFZ0Hzd38+1EGCPYfRFDTp
-                                IdTnebc9CBh363bIKpeYjt/hSxy7VbumGpMXuL9Vix2mMdrEqeLotkapQnnzGAMH
-                                U+3hiLnlWZ3TniFtDB9NvkIE7cNhMX01tWf5M2WpfpGjvo9fx//n7eza0fXGuxaZ
-                                Ujp6wEgatz0g4dHqL1vfM0dZHGVpLMPDyCXKGUhzRtT3u7tLKCQGUGBlHT7TNMI0
-                                7qZWOSGn2lnSk39iY9l+mmuWENlMEt4+qZxHAfKoWXCoTARNa94PQIk86Tqntx7o
-                                8d7zdnkCgYEA1zCUGsWduR59BEsFx7wZo7To8gjv+FiN0sEt7ScWurWljK/8m6sP
-                                QqGedaMAw0j2oMrgFWXLMAjDaUhNJsf/H0TWDZNTWxF/9TZtDinCjYB2LF9DFHmn
-                                StvtJ7LkG2MPclF69c5vyJaRdobXAEGdBdtasVdWTXJBot7Jm9Fi5IcCgYEAyJ4V
-                                gTVzwELR7ao+YC7wdi1pIMD2TkS78wre8kmeYFKkxteA4uAfLm/2ew6ATFU3xMUG
-                                OD4cHeV8/RS98Jj27HIQeH09HxPWLGZyywqSchm/GiZQAuCcNZwPd6hedfM/UUuw
-                                h3NlpmggzrRwnvwpu5tbAw/FOkiuYQvpJoSXBW0CgYBzSVRfj3XzopDpxuO+4Vh/
-                                K0INwZoG3DKHMfXP8zwrJXwfBn34TEntsba6YWzcMu/mryokbJfSES/X7ONgno9h
-                                Cjj/pulmhdae4dzFVLwloSgul47RnmdxJKhGt4Gb5pN09JBCtqmOtpQSAyWWvpBI
-                                ff91uUvETC07+83ZS/GGawKBgDffLwYJKO+GrIiQPUb0S6veAcVJeE9b/Sw2/thj
-                                gGQ7IADwy8hjustoCzFCXKDlqt52MMFBKvt4ilLBkBSNxVccfVHRL1CUabV74sSB
-                                cT+tw/c4bFggzeBwUi51Cbm3wQ6XEdbnYIvzvA9VWXgtqkHBhptXrQoKa+ZDNu+v
-                                RZARAoGAaucf5K3rVkwI5VqFZ+GeVobzUqfOjPpoztekm5d0vHKvrSmuTuDiRDuE
-                                UOcprL08H4pMcoEexw0bOjbKz9jIf5vsrexUjgwFhDazpSdHnwkRFdLOUW9FDTRO
-                                a0eYrw5T1HPbFBlQ3d7mihDDzsdv+CbmEq2GepHHioIsPmm/tF8=
-                                -----END RSA PRIVATE KEY-----
 ## Compilation of variables (No need to change them unless you have issues)
 zabbix_server_version       : "{{zabbix_server_major}}.{{zabbix_server_minor}}.{{zabbix_server_revision}}"
 zabbix_server_ubuntu        : "1:{{zabbix_server_version}}-1+precise"
