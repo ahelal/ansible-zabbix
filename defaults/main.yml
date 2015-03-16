@@ -8,7 +8,7 @@ zabbix_server_revision                : '4'
 zabbix_server_front_install           : False  ## Install frontend and dependency
 zabbix_server_install                 : False  ## Install server
 zabbix_server_proxy_install           : False  ## Install proxy server
-zabbix_agent_install                  : False  ## Install proxy server
+zabbix_agent_install                  : False  ## Install agent server
 
 ## Zabbix Server  Configuration
 zabbix_server_host                    : "{{ ansible_ssh_host | default(inventory_hostname) }}"
@@ -45,10 +45,6 @@ zabbix_server_url                     : "http://{{ zabbix_server_host }}/zabbix"
 zabbix_server_front_user              : "Admin"   ## fresh installation default 'Admin' (dont change unless you changed the user)
 zabbix_server_front_pass              : "zabbix"  ## fresh installation default 'Zabbix' (dont change unless you changed the password)
 
-## Zabbix Server options
-# tODO remove
-zabbix_server_install_type            : 'server'  ## Install zabbix 'server' or 'proxy'
-
 ## Database options
 zabbix_server_db_type                 : 'pgsql' ## pgsql or mysql
 zabbix_server_db_name                 : "zabbix"
@@ -57,6 +53,26 @@ zabbix_server_db_pass                 : "READRdXxc&2zgvgzs_blaaaaaa"
 zabbix_server_db_host                 : "localhost"
 zabbix_server_db_port                 : 5432
 zabbix_server_db_intial_dir           : "/usr/share/zabbix-server-{{zabbix_server_db_type}}"
+
+## Zabbix agent
+zabbix_agent_conf                     :
+    PidFile                           : /var/run/zabbix/zabbix_agentpid
+    LogFile                           : "/var/log/zabbix/zabbix_agentd.log"
+    LogFileSize                       : 0    ## 0 - disable automatic log rotation.
+    DebugLevel                        : 3    ## (0) no, (1) critical info (2) error info (3) warnings (4) A lots of infor)
+    EnableRemoteCommands              : 0 ## 0 or 1
+    LogRemoteCommands                 : 0 ## 0 or 1
+    Server                            : "{{ zabbix_agent_Server }}"
+    ListenPort                        : 10050
+    ListenIP                          : "0.0.0.0"
+    StartAgents                       : 3
+    Hostname                          : "{{ inventory_hostname }}"
+    #ServerActive
+zabbix_agent_Server                   : 127.0.0.1
+zabbix_agent_Include                  :
+                                        - /etc/zabbix/zabbix_agentd.d/
+
+
 
 ## Compilation of variables (No need to change them unless you have issues)
 zabbix_server_version       : "{{zabbix_server_major}}.{{zabbix_server_minor}}.{{zabbix_server_revision}}"

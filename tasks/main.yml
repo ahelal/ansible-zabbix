@@ -1,6 +1,7 @@
 ---
 
 - include: common.yml
+  when: zabbix_server_front_install or zabbix_server_install or zabbix_server_proxy_install or zabbix_agent_install
 
 - include: postgresql.yml
   when: "zabbix_server_db_type == 'pgsql'"

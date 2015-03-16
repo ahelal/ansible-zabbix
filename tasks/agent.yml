@@ -8,7 +8,7 @@
 
 - name: zabbix_agent | Deploy zabbix_agentd.conf file
   template:
-     src="conf/zabbix_agentd.conf.j2"
+     src="agent/zabbix_agentd.conf.j2"
      dest="/etc/zabbix/zabbix_agentd.conf"
      owner=root
      group=root

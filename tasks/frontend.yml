@@ -15,7 +15,7 @@
 
 - name: frontend | Zabbix server php conf
   template:
-     src=zabbix_server/zabbix.conf.php
+     src=frontend/zabbix.conf.php
      dest=/etc/zabbix/web
      owner=www-data
      group=www-data
@@ -24,7 +24,7 @@
 
 - name: frontend | apache config
   template:
-     src=apache2/apache.conf.j2
+     src=frontend/apache.conf.j2
      dest="{{ zabbix_server_front_apache_conf }}"
      owner=root
      group=root
@@ -33,7 +33,7 @@
 
 - name: frontend | Deploy html redirect
   template:
-     src=zabbix_server/index.html.j2
+     src=frontend/index.html.j2
      dest="{{ zabbix_server_front_root }}/index.html"
      owner=www-data
      group=www-data
