@@ -1,5 +1,7 @@
-#Readme
+#Readme (NOT MAINTAINED) 
 This ansible role deploys zabbix server and/or Zabbix agent for Ubuntu 12.04 (tested on vagrant)
+
+
 
 ##Prerequisite
 * Having ansible installed on your workstation. 
